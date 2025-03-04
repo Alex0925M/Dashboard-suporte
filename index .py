@@ -110,114 +110,278 @@ HTML_TEMPLATE = '''
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@2.8.2/dist/alpine.min.js" defer></script>
+    <style>
+        [x-cloak] { display: none !important; }
+    </style>
 </head>
 <body class="bg-gray-100">
-    <div class="min-h-screen" x-data="{ currentTab: 'daily' }">
-        <nav class="bg-white shadow-lg">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="flex justify-between h-16">
+    <div class="min-h-screen flex flex-col" x-data="{ 
+        sidebarOpen: true,
+        mobileMenuOpen: false,
+        currentTab: 'dashboard'
+    }" x-cloak>
+        <!-- Header com gradiente e logo -->
+        <header class="bg-gradient-to-r from-emerald-600 to-indigo-700 shadow-lg z-10">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+                <div class="flex items-center justify-between">
                     <div class="flex items-center">
-                        <h1 class="text-xl font-bold text-emerald-500">Dashboard de Atendimentos - Suporte Melius</h1>
-                    </div>
-                </div>
-            </div>
-        </nav>
-
-        <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-            <!-- Filtros -->
-            <div class="bg-white rounded-lg shadow p-6 mb-6">
-                <form method="get" class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Período</label>
-                        <select name="period" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                            <option value="day" {% if period == 'day' %}selected{% endif %}>Hoje</option>
-                            <option value="week" {% if period == 'week' %}selected{% endif %}>Última Semana</option>
-                            <option value="month" {% if period == 'month' %}selected{% endif %}>Último Mês</option>
-                            <option value="custom" {% if period == 'custom' %}selected{% endif %}>Personalizado</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Data Inicial</label>
-                        <input type="date" name="start_date" value="{{ start_date }}"
-                    min="{{ min_date }}" max="{{ max_date }}"
-                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Data Final</label>
-                        <input type="date" name="end_date" value="{{ end_date }}"
-                        min="{{ min_date }}" max="{{ max_date }}"
-                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                    </div>
-                    <div class="md:col-span-3">
-                        <button type="submit"
-                                class="w-full md:w-auto bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded">
-                            Filtrar
+                        <!-- Botão de menu mobile -->
+                        <button @click="mobileMenuOpen = !mobileMenuOpen" class="md:hidden mr-2 inline-flex items-center justify-center p-2 rounded-md text-white hover:text-white hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white">
+                            <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                            </svg>
                         </button>
+                        
+                        <!-- Toggle sidebar no desktop -->
+                        <button @click="sidebarOpen = !sidebarOpen" class="hidden md:inline-flex mr-2 items-center justify-center p-2 rounded-md text-white hover:text-white hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white">
+                            <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                            </svg>
+                        </button>
+                        
+                        <!-- Logo e título -->
+                        <div class="bg-white p-2 rounded-full shadow-md mr-4">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h1 class="text-2xl font-bold text-white">Dashboard de Atendimentos</h1>
+                            <p class="text-indigo-100">Suporte Melius - Análise de chamados</p>
+                        </div>
                     </div>
-                </form>
+                    <div class="text-white text-right">
+                        <p class="font-medium">Período: {{ start_date }} a {{ end_date }}</p>
+                        <p class="text-sm text-indigo-100">Atualizado em: {{ datetime.now().strftime('%d/%m/%Y %H:%M') }}</p>
+                    </div>
+                </div>
             </div>
-
-            <!-- Cards de Resumo -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                <div class="bg-white rounded-lg shadow p-6">
-                    <h3 class="text-lg font-medium text-gray-900">Total de Atendimentos</h3>
-                    <p class="text-3xl font-bold text-indigo-600">{{ total_atendimentos }}</p>
-                </div>
-                <div class="bg-white rounded-lg shadow p-6">
-                    <h3 class="text-lg font-medium text-gray-900">Média por Responsável</h3>
-                    <p class="text-3xl font-bold text-indigo-600">{{ media_atendimentos }}</p>
-                </div>
-                <div class="bg-white rounded-lg shadow p-6">
-                    <h3 class="text-lg font-medium text-gray-900">Tempo Médio de Resolução</h3>
-                    <p class="text-3xl font-bold text-indigo-600">{{ tempo_medio }}</p>
-                </div>
-                <div class="bg-white rounded-lg shadow p-6">
-                    <h3 class="text-lg font-medium text-gray-900">Atendimentos no Prazo/Fora do Prazo</h3>
-                    <p class="text-3xl font-bold">
-                    <span class="text-green-600">{{ total_atendimentos_no_prazo }}</span>
-                    <span class="text-black">/</span>
-                    <span class="text-red-600">{{ total_atendimentos_fora_do_prazo }}</span>
-                    </p>
+        </header>
+        
+        <div class="flex flex-1 overflow-hidden">
+            <!-- Sidebar para Mobile (overlay) -->
+            <div x-show="mobileMenuOpen" 
+                 class="fixed inset-0 flex z-40 md:hidden"
+                 x-transition:enter="transition-opacity ease-linear duration-300"
+                 x-transition:enter-start="opacity-0"
+                 x-transition:enter-end="opacity-100"
+                 x-transition:leave="transition-opacity ease-linear duration-300"
+                 x-transition:leave-start="opacity-100"
+                 x-transition:leave-end="opacity-0">
+                
+                <!-- Overlay backdrop -->
+                <div class="fixed inset-0" 
+                     @click="mobileMenuOpen = false">
+                    <div class="absolute inset-0 bg-gray-600 opacity-75"></div>
                 </div>
                 
-                <div class="bg-white rounded-lg shadow p-6">
-                    <h3 class="text-lg font-medium text-gray-900">Percentual de nota no atendimento</h3>
-                    <p class="text-3xl font-bold text-red-600">0%</p>
-                </div>
-                <div class="bg-white rounded-lg shadow p-6">
-                    <h3 class="text-lg font-medium text-gray-900">Escalações</h3>
-                    <p class="text-3xl font-bold text-red-600">0</p>
+                <!-- Sidebar content -->
+                <div class="relative flex-1 flex flex-col max-w-xs w-full bg-gray-800 transition-all transform ease-in-out duration-300">
+                    <!-- Botão fechar -->
+                    <div class="absolute top-0 right-0 -mr-12 pt-2">
+                        <button @click="mobileMenuOpen = false" class="ml-1 flex items-center justify-center h-10 w-10 rounded-full focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white">
+                            <svg class="h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+                    
+                    <div class="px-2 pt-6 pb-3 space-y-1">
+                        <!-- Links da Sidebar -->
+                        <a href="#" @click.prevent="currentTab = 'dashboard'; mobileMenuOpen = false" class="block px-3 py-2 rounded-md text-base font-medium" :class="currentTab == 'dashboard' ? 'bg-gray-900 text-white' : 'text-gray-300 hover:bg-gray-700 hover:text-white'">
+                            <div class="flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                                </svg>
+                                Dashboard
+                            </div>
+                        </a>
+                        <a href="#" @click.prevent="currentTab = 'responsaveis'; mobileMenuOpen = false" class="block px-3 py-2 rounded-md text-base font-medium" :class="currentTab == 'responsaveis' ? 'bg-gray-900 text-white' : 'text-gray-300 hover:bg-gray-700 hover:text-white'">
+                            <div class="flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                                </svg>
+                                Responsáveis
+                            </div>
+                        </a>
+                        <a href="#" @click.prevent="currentTab = 'robos'; mobileMenuOpen = false" class="block px-3 py-2 rounded-md text-base font-medium" :class="currentTab == 'robos' ? 'bg-gray-900 text-white' : 'text-gray-300 hover:bg-gray-700 hover:text-white'">
+                            <div class="flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
+                                </svg>
+                                Robôs
+                            </div>
+                        </a>
+                        <a href="#" @click.prevent="currentTab = 'analise'; mobileMenuOpen = false" class="block px-3 py-2 rounded-md text-base font-medium" :class="currentTab == 'analise' ? 'bg-gray-900 text-white' : 'text-gray-300 hover:bg-gray-700 hover:text-white'">
+                            <div class="flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                                Análise
+                            </div>
+                        </a>
+                    </div>
                 </div>
             </div>
+            
+            <!-- Sidebar para Desktop (fixa) -->
+            <div class="hidden md:flex md:flex-shrink-0">
+                <div class="flex flex-col w-64 transition-width duration-300" :class="sidebarOpen ? 'w-64' : 'w-16'">
+                    <div class="flex flex-col flex-grow bg-gray-800 pt-5 overflow-y-auto">
+                        <div class="flex-grow flex flex-col">
+                            <nav class="flex-1 px-2 space-y-1 pb-4">
+                                <!-- Links da Sidebar -->
+                                <a href="#" @click.prevent="currentTab = 'dashboard'" class="flex items-center px-2 py-2 text-sm font-medium rounded-md" :class="currentTab == 'dashboard' ? 'bg-gray-900 text-white' : 'text-gray-300 hover:bg-gray-700 hover:text-white'">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                                    </svg>
+                                    <span :class="{ 'hidden': !sidebarOpen }">Dashboard</span>
+                                </a>
+                                <a href="#" @click.prevent="currentTab = 'responsaveis'" class="flex items-center px-2 py-2 text-sm font-medium rounded-md" :class="currentTab == 'responsaveis' ? 'bg-gray-900 text-white' : 'text-gray-300 hover:bg-gray-700 hover:text-white'">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                                    </svg>
+                                    <span :class="{ 'hidden': !sidebarOpen }">Responsáveis</span>
+                                </a>
+                                <a href="#" @click.prevent="currentTab = 'robos'" class="flex items-center px-2 py-2 text-sm font-medium rounded-md" :class="currentTab == 'robos' ? 'bg-gray-900 text-white' : 'text-gray-300 hover:bg-gray-700 hover:text-white'">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
+                                    </svg>
+                                    <span :class="{ 'hidden': !sidebarOpen }">Robôs</span>
+                                </a>
+                                <a href="#" @click.prevent="currentTab = 'analise'" class="flex items-center px-2 py-2 text-sm font-medium rounded-md" :class="currentTab == 'analise' ? 'bg-gray-900 text-white' : 'text-gray-300 hover:bg-gray-700 hover:text-white'">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                    </svg>
+                                    <span :class="{ 'hidden': !sidebarOpen }">Análise</span>
+                                </a>
+                            </nav>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Conteúdo principal -->
+            <div class="flex-1 overflow-auto">
+                <!-- Filtros -->
+                <div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+                    <div class="bg-white rounded-lg shadow p-6 mb-6">
+                        <form method="get" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Período</label>
+                                <select name="period" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                    <option value="day" {% if period == 'day' %}selected{% endif %}>Hoje</option>
+                                    <option value="week" {% if period == 'week' %}selected{% endif %}>Última Semana</option>
+                                    <option value="month" {% if period == 'month' %}selected{% endif %}>Último Mês</option>
+                                    <option value="custom" {% if period == 'custom' %}selected{% endif %}>Personalizado</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Data Inicial</label>
+                                <input type="date" name="start_date" value="{{ start_date }}"
+                                min="{{ min_date }}" max="{{ max_date }}"
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Data Final</label>
+                                <input type="date" name="end_date" value="{{ end_date }}"
+                                min="{{ min_date }}" max="{{ max_date }}"
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                            </div>
+                            <div class="md:col-span-3">
+                                <button type="submit"
+                                        class="w-full md:w-auto bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded">
+                                    Filtrar
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                    
+                    <!-- Conteúdo da Dashboard (todos) -->
+                    <div x-show="currentTab === 'dashboard'">
+                        <!-- Cards de Resumo -->
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                            <div class="bg-white rounded-lg shadow p-6">
+                                <h3 class="text-lg font-medium text-gray-900">Total de Atendimentos</h3>
+                                <p class="text-3xl font-bold text-indigo-600">{{ total_atendimentos }}</p>
+                            </div>
+                            <div class="bg-white rounded-lg shadow p-6">
+                                <h3 class="text-lg font-medium text-gray-900">Média por Responsável</h3>
+                                <p class="text-3xl font-bold text-indigo-600">{{ media_atendimentos }}</p>
+                            </div>
+                            <div class="bg-white rounded-lg shadow p-6">
+                                <h3 class="text-lg font-medium text-gray-900">Tempo Médio de Resolução</h3>
+                                <p class="text-3xl font-bold text-indigo-600">{{ tempo_medio }}</p>
+                            </div>
+                            <div class="bg-white rounded-lg shadow p-6">
+                                <h3 class="text-lg font-medium text-gray-900">Atendimentos no Prazo/Fora do Prazo</h3>
+                                <p class="text-3xl font-bold">
+                                <span class="text-green-600">{{ total_atendimentos_no_prazo }}</span>
+                                <span class="text-black">/</span>
+                                <span class="text-red-600">{{ total_atendimentos_fora_do_prazo }}</span>
+                                </p>
+                            </div>
+                            
+                            <div class="bg-white rounded-lg shadow p-6">
+                                <h3 class="text-lg font-medium text-gray-900">Percentual de nota no atendimento</h3>
+                                <p class="text-3xl font-bold text-red-600">0%</p>
+                            </div>
+                            <div class="bg-white rounded-lg shadow p-6">
+                                <h3 class="text-lg font-medium text-gray-900">Escalações</h3>
+                                <p class="text-3xl font-bold text-red-600">0</p>
+                            </div>
+                        </div>
 
-            <!-- Gráficos -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="bg-white rounded-lg shadow p-6">
-                    <h3 class="text-lg font-medium text-gray-900 mb-4">Atendimentos por Responsável</h3>
-                    <div id="grafico_responsaveis" class="h-96"></div>
+                        <!-- Gráficos -->
+                        <div class="grid grid-cols-1 md:grid-cols-1 gap-6">
+                            <div class="bg-white rounded-lg shadow p-6">
+                                <h3 class="text-lg font-medium text-gray-900 mb-4">Atendimentos por Responsável</h3>
+                                <div id="grafico_responsaveis" class="h-96"></div>
+                            </div>
+                            <div class="bg-white rounded-lg shadow p-6">
+                                <h3 class="text-lg font-medium text-gray-900 mb-4">Distribuição por Sistema</h3>
+                                <div id="grafico_sistemas" class="h-80"></div>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-lg shadow p-6 mt-6">
+                            <h3 class="text-lg font-medium text-gray-900 mb-4">Motivo do contato</h3>
+                            <div id="grafico_motivo_contato" class="h-96"></div>
+                        </div>
+                        <div class="bg-white rounded-lg shadow p-6 mt-6">
+                            <h3 class="text-lg font-medium text-gray-900 mb-4">Quantidade de Clientes</h3>
+                            <div id="grafico_quantidade_clientes" class="h-96"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Conteúdo da aba Responsáveis -->
+                    <div x-show="currentTab === 'responsaveis'" class="bg-white rounded-lg shadow p-6 mb-6">
+                        <h2 class="text-xl font-semibold mb-4">Detalhes por Responsável</h2>
+                        <div id="grafico_responsaveis_detalhado" class="h-96"></div>
+                    </div>
+                    
+                    <!-- Conteúdo da aba Robôs -->
+                    <div x-show="currentTab === 'robos'" class="bg-white rounded-lg shadow p-6 mb-6">
+                        <h2 class="text-xl font-semibold mb-4">Detalhes por Robô</h2>
+                        <div id="grafico_robos_detalhado" class="h-96"></div>
+                    </div>
+                    
+                    <!-- Conteúdo da aba Análise -->
+                    <div x-show="currentTab === 'analise'" class="bg-white rounded-lg shadow p-6 mb-6">
+                        <h2 class="text-xl font-semibold mb-4">Análise de Chamados por Robô</h2>
+                        <div class="prose max-w-none">
+                            <pre class="whitespace-pre-wrap font-sans text-base leading-relaxed">{{ analysis_result }}</pre>
+                        </div>
+                    </div>
                 </div>
-                <div class="bg-white rounded-lg shadow p-6">
-                    <h3 class="text-lg font-medium text-gray-900 mb-4">Distribuição por Sistema</h3>
-                    <div id="grafico_sistemas" class="h-96"></div>
-                </div>
             </div>
-            <div class="bg-white rounded-lg shadow p-6 mt-6">
-                <h3 class="text-lg font-medium text-gray-900 mb-4">Motivo do contato</h3>
-                <div id="grafico_motivo_contato" class="h-96"></div>
+        </div>
+        
+        <!-- Footer -->
+        <footer class="bg-gray-800 text-white py-4">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <p class="text-center text-sm">© {{ datetime.now().year }} Melius - Dashboard de Suporte</p>
             </div>
-            <div class="bg-white rounded-lg shadow p-6 mt-6">
-                <h3 class="text-lg font-medium text-gray-900 mb-4">Quantidade de Clientes</h3>
-                <div id="grafico_quantidade_clientes" class="h-96"></div>
-            </div>
-
-            <!-- Análise do Groq -->
-            <div class="bg-white rounded-lg shadow p-6 mt-6">
-                <h3 class="text-lg font-medium text-gray-900 mb-4">Análise de Chamados por Robô</h3>
-                <div class="prose max-w-none">
-                    <pre class="whitespace-pre-wrap font-sans text-base leading-relaxed">{{ analysis_result }}</pre>
-                </div>
-            </div>
-        </main>
+        </footer>
     </div>
 
     <script>
@@ -377,7 +541,8 @@ def dashboard():
         start_date=start_date.strftime('%Y-%m-%d'),
         end_date=end_date.strftime('%Y-%m-%d'),
         min_date=min_date.strftime('%Y-%m-%d'),
-        max_date=max_date.strftime('%Y-%m-%d')
+        max_date=max_date.strftime('%Y-%m-%d'),
+        datetime=datetime
     )
 
 if __name__ == '__main__':
