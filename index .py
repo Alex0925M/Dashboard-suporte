@@ -8,6 +8,7 @@ import os
 from dotenv import load_dotenv
 from groq import Groq
 
+
 # Carrega as variáveis de ambiente
 load_dotenv()
 
@@ -333,7 +334,7 @@ HTML_TEMPLATE = '''
                         </div>
 
                         <!-- Gráficos -->
-                        <div class="grid grid-cols-1 md:grid-cols-1 gap-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div class="bg-white rounded-lg shadow p-6">
                                 <h3 class="text-lg font-medium text-gray-900 mb-4">Atendimentos por Responsável</h3>
                                 <div id="grafico_responsaveis" class="h-96"></div>
@@ -422,7 +423,7 @@ def dashboard():
     end_date = request.args.get('end_date')
 
     # Lendo o arquivo CSV
-    df = pd.read_csv("./DEAL_20250224_b0d3db60_67bc7aaac162c.csv", sep=';', encoding='utf-8')
+    df = pd.read_csv("./DEAL_20250304_8327d3d5_67c735c9da7c0.csv", sep=';', encoding='utf-8')
     
     # Convertendo datas
     df['Criado'] = pd.to_datetime(df['Criado'], format='%d/%m/%Y %H:%M:%S')
